@@ -1,0 +1,26 @@
+.bottom-nav {
+ background-color: #2f6932;
+ /* match header green */
+ display: flex;
+ justify-content: space-around;
+ align-items: center;
+ padding: 0.75rem 0;
+ position: fixed;
+ bottom: 0;
+ left: 0;
+ width: 100%;
+}
+
+.bottom-nav a {
+ color: white;
+ text-decoration: none;
+ font-size: 0.95rem;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ transition: opacity 0.2s ease;
+}
+
+.bottom-nav a:hover {
+ opacity: 0.8;
+}

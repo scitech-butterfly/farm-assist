@@ -1,38 +1,144 @@
-.App {
-  text-align: center;
+:root {
+  --accent: #2d6a4f;
+  --muted: #666
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+  box-sizing: border-box
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body {
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  margin: 0;
+  background: #f7f7f7;
+  color: #111
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.app {
+  max-width: 980px;
+  margin: 18px auto;
+  padding: 18px
+}
+
+.header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  color: #fff;
+  font-weight: 700
 }
 
-.App-link {
-  color: #61dafb;
+.nav {
+  display: flex;
+  gap: 10px;
+  align-items: center
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+.nav a {
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 600
+}
+
+.card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px
+}
+
+.input,
+textarea,
+select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  flex: 1
+}
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent)
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.result-item {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start
+}
+
+.small {
+  font-size: 0.9rem;
+  color: var(--muted)
+}
+
+.footer {
+  margin-top: 18px;
+  text-align: center;
+  color: #888
+}
+
+.language-switch {
+  display: flex;
+  gap: 8px;
+  align-items: center
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px
+}
+
+@media (max-width:720px) {
+  .profile-grid {
+    grid-template-columns: 1fr
   }
 }
