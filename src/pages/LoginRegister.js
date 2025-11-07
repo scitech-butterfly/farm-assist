@@ -30,14 +30,19 @@ export default function LoginRegister() {
   const [activeField, setActiveField] = useState(null);
   const [showInstructions, setShowInstructions] = useState(false);
 
+  // ✅ FIX: preload pendingQueryData but NEVER the password
   useEffect(() => {
     const pending = localStorage.getItem("pendingQueryData");
     if (pending) {
       const parsed = JSON.parse(pending);
-      setForm(prev => ({ ...prev, ...parsed }));
+      const { password, ...parsedWithoutPassword } = parsed;
+
+      setForm(prev => ({
+        ...prev,
+        ...parsedWithoutPassword
+      }));
     }
   }, []);
-
 
   const fieldQuestions = {
     name: "What is your name?",
@@ -52,17 +57,14 @@ export default function LoginRegister() {
   // 🎙️ Start Recording
   const startRecording = (fieldName) => {
     setActiveField(fieldName);
-    recorder
-      .start()
+    recorder.start()
       .then(() => setListening(true))
       .catch((err) => console.error("Recording error:", err));
   };
 
   // 🎙️ Stop Recording & Transcribe
   const stopRecording = () => {
-    recorder
-      .stop()
-      .getMp3()
+    recorder.stop().getMp3()
       .then(async ([buffer, blob]) => {
         setListening(false);
         setTranscribing(true);
@@ -124,6 +126,7 @@ export default function LoginRegister() {
     </button>
   );
 
+  // ✅ Validation unchanged
   const validateForm = () => {
     if (!form.name.trim()) {
       setErr("Name is required");
@@ -162,6 +165,7 @@ export default function LoginRegister() {
     return true;
   };
 
+  // ✅ FINAL FIX: correct register payload
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -172,20 +176,34 @@ export default function LoginRegister() {
 
     try {
       let ok = false;
+
       if (isRegister) {
-        ok = await auth.register({form, queryId: localStorage.getItem("pendingQuery")});
-        if (!ok)
-          setErr("Registration failed. Try another name or check server.");
-      } else {
+        const payload = {
+          name: form.name,
+          password: form.password,
+          age: form.age,
+          gender: form.gender,
+          crops: form.crops,
+          familySize: form.familySize,
+          landSize: form.landSize,
+          queryId: localStorage.getItem("pendingQuery") || null
+        };
+
+        ok = await auth.register(payload);
+        if (!ok) setErr("Registration failed. Try again.");
+      } 
+      else {
         ok = await auth.login({
           name: form.name,
           password: form.password,
         });
         if (!ok) setErr("Invalid credentials.");
       }
+
       if (ok) navigate(redirectTo || "/profile");
+
     } catch (e) {
-      setErr(e.message || "Something went wrong. Check console for details.");
+      setErr(e.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -204,6 +222,7 @@ export default function LoginRegister() {
       landSize: "",
     });
   };
+
 
   return (
     <div className="card">

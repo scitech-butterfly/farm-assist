@@ -1,5 +1,18 @@
 body {
+  width: 100%;
+  background-image: url("/images/farmer-bg.jpg");
+  background-size: cover;
+  /* Make it fill the screen */
+  background-repeat: no-repeat;
+  /* Prevent tiling */
+  background-attachment: fixed;
+  /* Keep it fixed when scrolling */
+  background-position: center;
+  /* Center the image */
+  min-height: 100vh;
+  /* Ensure full height */
   margin: 0;
+  padding:0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -10,4 +23,31 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }

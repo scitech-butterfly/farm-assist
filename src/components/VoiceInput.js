@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import MicRecorder from "mic-recorder-to-mp3";
+import { useTranslation } from 'react-i18next';
 
 const recorder = new MicRecorder({ bitRate: 64 });
 
@@ -11,12 +12,99 @@ export default function VoiceInput({ lang, onSubmitQuery }) {
   const [familySize, setFamilySize] = useState("");
   const [landSize, setLandSize] = useState("");
   const [query, setQuery] = useState("");
+  const { t } = useTranslation();
   
   const [activeField, setActiveField] = useState(null);
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
 
+
+  const englishAudioRef = useRef(null);
+  const hindiAudioRef = useRef(null);
+  const marathiAudioRef = useRef(null);
+
+  // 🎛 State to manage which audio is active
+  const [activeLang, setActiveLang] = useState(null); // "en", "hi", "mr"
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // 🎵 Play audio for a specific language
+  const playAudio = (langCode) => {
+    stopAllAudio(); // stop others before playing new
+    let ref = null;
+    if (langCode === "en") ref = englishAudioRef.current;
+    if (langCode === "hi") ref = hindiAudioRef.current;
+    if (langCode === "mr") ref = marathiAudioRef.current;
+
+    if (ref) {
+      ref.currentTime = 0;
+      ref.play();
+      setActiveLang(langCode);
+      setIsPlaying(true);
+      setIsPaused(false);
+    }
+  };
+
+  // ⏸ Pause the active audio
+  const pauseAudio = () => {
+    let ref = getActiveAudioRef();
+    if (ref) {
+      ref.pause();
+      setIsPaused(true);
+      setIsPlaying(false);
+    }
+  };
+
+  // ▶ Resume
+  const resumeAudio = () => {
+    let ref = getActiveAudioRef();
+    if (ref) {
+      ref.play();
+      setIsPaused(false);
+      setIsPlaying(true);
+    }
+  };
+
+  // ⏹ Stop
+  const stopAudio = () => {
+    let ref = getActiveAudioRef();
+    if (ref) {
+      ref.pause();
+      ref.currentTime = 0;
+    }
+    setIsPlaying(false);
+    setIsPaused(false);
+    setActiveLang(null);
+  };
+
+  // 🧠 Helper to get currently active ref
+  const getActiveAudioRef = () => {
+    if (activeLang === "en") return englishAudioRef.current;
+    if (activeLang === "hi") return hindiAudioRef.current;
+    if (activeLang === "mr") return marathiAudioRef.current;
+    return null;
+  };
+
+  // 🚫 Stop all before switching
+  const stopAllAudio = () => {
+    [englishAudioRef, hindiAudioRef, marathiAudioRef].forEach((ref) => {
+      if (ref.current) {
+        ref.current.pause();
+        ref.current.currentTime = 0;
+      }
+    });
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
+
+  // Reset state when audio ends naturally
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+    setIsPaused(false);
+    setActiveLang(null);
+  };
+  
   const fieldQuestions = {
     name: "What is your name?",
     age: "What is your age?",
@@ -105,16 +193,128 @@ export default function VoiceInput({ lang, onSubmitQuery }) {
 
   return (
     <div className="card">
-      {/* Instructions Speaker Button */}
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+      {/* 🔊 Hidden Audio Player */}
+      <audio
+        ref={englishAudioRef}
+        src={`${process.env.PUBLIC_URL}/audio/instructions_en.mp3`}
+        preload="auto"
+        onEnded={handleAudioEnd}
+      />
+      <audio
+        ref={hindiAudioRef}
+        src={`${process.env.PUBLIC_URL}/audio/instructions_hi.mp3`}
+        preload="auto"
+        onEnded={handleAudioEnd}
+      />
+      <audio
+        ref={marathiAudioRef}
+        src="/audio/instructions_mr.mp3"
+        preload="auto"
+        onEnded={handleAudioEnd}
+      />
+
+      {/* 🌐 Language Audio Control Buttons */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: 16,
+        }}
+      >
         <button
-          className="voice-button"
-          onClick={() => setShowInstructions(!showInstructions)}
-          style={{ background: "#10b981" }}
+          onClick={() => playAudio("en")}
+          disabled={activeLang === "en" && isPlaying}
+          style={{
+            background: activeLang === "en" ? "#2563eb" : "#3b82f6",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
         >
-          🔊
-          <div>Instructions</div>
+          🇬🇧 English
         </button>
+
+        <button
+          onClick={() => playAudio("hi")}
+          disabled={activeLang === "hi" && isPlaying}
+          style={{
+            background: activeLang === "hi" ? "#dc2626" : "#ef4444",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          🇮🇳 हिंदी
+        </button>
+
+        <button
+          onClick={() => playAudio("mr")}
+          disabled={activeLang === "mr" && isPlaying}
+          style={{
+            background: activeLang === "mr" ? "#059669" : "#10b981",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "8px",
+            cursor: "pointer",
+          }}
+        >
+          🇲🇷 मराठी
+        </button>
+
+        {/* Pause / Resume / Stop buttons */}
+        {(isPlaying || isPaused) && (
+          <>
+            {isPlaying && (
+              <button
+                onClick={pauseAudio}
+                style={{
+                  background: "#f59e0b",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                }}
+              >
+                ⏸ Pause
+              </button>
+            )}
+
+            {isPaused && (
+              <button
+                onClick={resumeAudio}
+                style={{
+                  background: "#3b82f6",
+                  color: "white",
+                  border: "none",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                }}
+              >
+                ▶ Resume
+              </button>
+            )}
+
+            <button
+              onClick={stopAudio}
+              style={{
+                background: "#ef4444",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "8px",
+              }}
+            >
+              ⏹ Stop
+            </button>
+          </>
+        )}
       </div>
 
       {/* Instructions Panel */}
@@ -259,7 +459,7 @@ export default function VoiceInput({ lang, onSubmitQuery }) {
             marginTop: "8px"
           }}
         >
-          Search Schemes
+          {t("Search")}
         </button>
       </div>
     </div>

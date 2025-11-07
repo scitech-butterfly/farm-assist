@@ -10,12 +10,11 @@
 body {
   font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
   margin: 0;
-  background: #f7f7f7;
-  color: #111
+  color: #111;             /* Ensure full height */
 }
 
 .app {
-  max-width: 980px;
+  width: 100%;
   margin: 18px auto;
   padding: 18px
 }

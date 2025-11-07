@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import VoiceInput from "../components/VoiceInput";
 import { fetchSchemesForQuery, fetchAllSchemes } from "../utils/api";
 import SchemeCard from "../components/SchemeCard";
+import { useTranslation } from 'react-i18next';
 
 const API_BASE = process.env.REACT_APP_API_URL || "https://farm-assist-backend-3fi2.onrender.com";
-
+const API_BASE1 = "https://nand0zz-farmassist.hf.space"
 export default function Home({ lang }) {
   const [query, setQuery] = useState("");
   const [crops, setCrops] = useState("");
@@ -20,7 +21,7 @@ export default function Home({ lang }) {
   // ✅ Save anonymous search query to backend + localStorage
   const saveUserQuery = async (form) => {
     try {
-      const res = await fetch(`${API_BASE}/api/query`, {
+      const res = await fetch(`${API_BASE}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -28,37 +29,36 @@ export default function Home({ lang }) {
 
       const saved = await res.json();
 
-      // Save ID for linking during registration
       localStorage.setItem("pendingQuery", saved._id);
-
-      // Save form values so they get prefilled during registration
       localStorage.setItem("pendingQueryData", JSON.stringify(form));
     } catch (err) {
       console.error("Failed to save user query:", err);
     }
   };
 
-  // ✅ NLP/text-based searching
-  const fetchSchemesForQuery = async ({ query, crops }) => {
-    if (!query.trim()) return;
-    setLoading(true);
-    setShowAll(false);
+  // ✅ MAIN SEARCH HANDLER (renamed to avoid conflict)
+  const handleSearchSchemes = async ({ query }) => {
+  if (!query?.trim()) return;
 
-    // ✅ Save the user's complete query data for the registration page
-    await saveUserQuery({
-      query,
-      age,
-      gender,
-      crops,
-      familySize,
-      landSize,
-      name: "", // anonymous user; name is taken during registration
-    });
+  setLoading(true);
+  setShowAll(false);
 
-    const res = await fetchSchemesForQuery({ query, crops });
-    setSchemes(res);
-    setLoading(false);
-  };
+  await saveUserQuery({
+    query,
+    age,
+    gender,
+    crops,       // ✅ can keep for saving user profile
+    familySize,
+    landSize,
+    name: "",
+  });
+
+  const res = await fetchSchemesForQuery({ query });  // ✅ only query
+  setSchemes(res);
+
+  setLoading(false);
+};
+
 
   // ✅ Load all schemes
   const loadAllSchemes = async () => {
@@ -74,21 +74,31 @@ export default function Home({ lang }) {
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <div>
+  {/* ✅ YouTube Intro Video */}
+  <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+    <iframe
+      width="800"
+      height="450"
+      src="https://www.youtube.com/embed/xecxVzAha8o?autoplay=1&mute=1&controls=1&loop=0"
+      title="Farm Assist Intro Video"
+      style={{ border: "none", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+    />
+  </div>
       {/* Browse All */}
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-        <button className="btn" onClick={loadAllSchemes}>Browse All Schemes</button>
+        <button className="btn" onClick={loadAllSchemes}>{t("browse_all_schemes")}</button>
       </div>
 
       {/* Voice + Query Input */}
       <div className="card">
         <VoiceInput
           lang={lang}
-          onQueryDetected={(q) => {
-            setQuery(q);
-            fetchSchemesForQuery({ query: q, crops });
-          }}
           onSubmitQuery={({ query, age, gender, crops, familySize, landSize }) => {
             setQuery(query);
             setAge(age);
@@ -97,7 +107,7 @@ export default function Home({ lang }) {
             setFamilySize(familySize);
             setLandSize(landSize);
 
-            fetchSchemesForQuery({ query, crops });
+            handleSearchSchemes({ query});
           }}
         />
       </div>
@@ -109,10 +119,10 @@ export default function Home({ lang }) {
         ) : schemes.length === 0 ? (
           <div className="small" style={{ marginTop: 8 }}>
             {showAll
-              ? "No schemes found."
+              ? t("no_schemes_found")
               : query
-              ? "No relevant schemes found."
-              : "Enter a query or browse all schemes."}
+              ? t("no_relevant_schemes") 
+              : t("enter_a_query")}
           </div>
         ) : (
           <div className="results-list">

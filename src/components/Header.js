@@ -17,7 +17,6 @@ export default function Header() {
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <LanguageToggle />
         {auth.user ? (
           <div className="small">{auth.user.name}</div>
         ) : (

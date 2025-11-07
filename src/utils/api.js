@@ -1,4 +1,4 @@
-const API_BASE = process.env.REACT_APP_API_URL || 'https://farm-assist-backend-3fi2.onrender.com';
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // ---------- AUTH ----------
 export async function registerUser(data) {
@@ -67,21 +67,29 @@ export async function loginUser(data) {
 
 // ---------- SCHEMES ----------
 export async function fetchAllSchemes() {
-  const res = await fetch(`${API_BASE}/api/schemes`);
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/schemes`);
+    if (!res.ok) throw new Error('Failed to fetch schemes');
+    return res.json();
+  } catch (err) {
+    console.error('fetchAllSchemes error:', err);
+    throw err;
+  }
 }
 
 // Fetch schemes based on user query
-export async function fetchSchemesForQuery({ query, crops }) {
+export async function fetchSchemesForQuery({ query }) {
   try {
     const res = await fetch(`${API_BASE}/api/schemes/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, crops }),
+      body: JSON.stringify({ query }),
     });
+
     if (!res.ok) throw new Error("Failed to fetch schemes");
+
     const data = await res.json();
-    return data.schemes || [];
+    return data.schemes || data;   // works with both response shapes
   } catch (err) {
     console.error("fetchSchemesForQuery error:", err);
     return [];
@@ -90,33 +98,98 @@ export async function fetchSchemesForQuery({ query, crops }) {
 
 // ---------- APPLICATIONS ----------
 export async function applyToScheme({ token, schemeId }) {
-  const res = await fetch(`${API_BASE}/api/applications`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ schemeId }),
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/applications/apply`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ schemeId }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to save application");
+    }
+    return res.json();
+  } catch (err) {
+    console.error('applyToScheme error:', err);
+    throw err;
+  }
+}
+
+export async function markApplication({ token, schemeId }) {
+  try {
+    const res = await fetch(`${API_BASE}/api/applications/apply`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ schemeId })
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to save application");
+    }
+    return res.json();
+  } catch (err) {
+    console.error('markApplication error:', err);
+    throw err;
+  }
 }
 
 export async function getUserApplications(token) {
-  const res = await fetch(`${API_BASE}/api/applications`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
+  try {
+    console.log('📡 Fetching user applications...');
+    console.log('API_BASE:', API_BASE);
+    console.log('Token:', token ? 'Present' : 'Missing');
+    
+    const res = await fetch(`${API_BASE}/api/applications/my`, {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+    });
+
+    console.log('Response status:', res.status);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("❌ getUserApplications failed:", res.status, errorText);
+      throw new Error(`Failed to load applications: ${res.status} ${errorText}`);
+    }
+
+    const data = await res.json();
+    console.log('✅ Applications loaded:', data);
+    return data;
+  } catch (err) {
+    console.error('getUserApplications error:', err);
+    throw err;
+  }
 }
 
 // ---------- FEEDBACK ----------
 export async function submitFeedback({ token, schemeId, rating, comment }) {
-  const res = await fetch(`${API_BASE}/api/feedback`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ schemeId, rating, comment }),
-  });
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ schemeId, rating, comment }),
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to submit feedback");
+    }
+    return res.json();
+  } catch (err) {
+    console.error('submitFeedback error:', err);
+    throw err;
+  }
 }

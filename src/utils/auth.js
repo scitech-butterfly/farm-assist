@@ -18,7 +18,10 @@ function useProvideAuth() {
       return null;
     }
   });
+
   const [token, setToken] = useState(localStorage.getItem("fs_token") || null);
+
+  const [hasNewApplication, setHasNewApplication] = useState(false); // ✅ Correctly placed INSIDE hook
 
   useEffect(() => {
     if (user) localStorage.setItem("fs_user", JSON.stringify(user));
@@ -69,5 +72,14 @@ function useProvideAuth() {
     setToken(null);
   };
 
-  return { user, token, login, register, logout };
+  // ✅ Return all values here
+  return {
+    user,
+    token,
+    login,
+    register,
+    logout,
+    hasNewApplication,
+    setHasNewApplication
+  };
 }
