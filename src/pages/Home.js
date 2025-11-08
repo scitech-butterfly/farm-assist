@@ -132,12 +132,6 @@ export default function Home({ lang }) {
           </div>
         )}
       </div>
-
-      {/* Tip */}
-      <div className="card small" style={{ marginTop: 12 }}>
-        Tip: This demo uses a mocked voice input. Connect your NLP model by setting
-        <code> REACT_APP_NLP_API </code> to your deployed endpoint.
-      </div>
     </div>
   );
 }
